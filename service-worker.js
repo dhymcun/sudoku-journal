@@ -1,28 +1,24 @@
-const CACHE_NAME = 'sudoku-journal-cache-v1';
-const urlsToCache = [
-    '/',
-    '/index.html',
-    '/styles.css', // If you have a CSS file
-    '/manifest.json',
-    '/icon-192x192.png',
-    '/icon-512x512.png',
-    // Add other assets you want to cache here
+const cacheName = 'sudoku-cache-v1';
+const staticAssets = [
+  './',
+  './index.html',
+  './icon-192x192.png',
+  './icon-512x512.png',
+  './manifest.json',
 ];
 
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                return cache.addAll(urlsToCache);
-            })
-    );
+self.addEventListener('install', async event => {
+  const cache = await caches.open(cacheName);
+  await cache.addAll(staticAssets);
 });
 
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                return response || fetch(event.request);
-            })
-    );
+self.addEventListener('fetch', event => {
+  const req = event.request;
+  event.respondWith(cacheFirst(req));
 });
+
+async function cacheFirst(req) {
+  const cache = await caches.open(cacheName);
+  const cachedResponse = await cache.match(req);
+  return cachedResponse || fetch(req);
+}
