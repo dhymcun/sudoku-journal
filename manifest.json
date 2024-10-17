@@ -1,6 +1,6 @@
 {
   "name": "Sudoku Journal",
-  "short_name": "Sudoku",
+  "short_name": "Sudoku Journal",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
