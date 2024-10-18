@@ -137,48 +137,44 @@
         }
 
         function logMove(event) {
-            if (loggingEnabled) {
-                let cell = event.target.parentElement;
-                let row = cell.parentElement.rowIndex;
-                let col = cell.cellIndex + 1; // Keep column as 1-indexed
-                let value = event.target.value;
+    if (loggingEnabled) {
+        let cell = event.target.parentElement;
+        let row = cell.parentElement.rowIndex + 1; // Add 1 to make it 1-indexed
+        let col = cell.cellIndex + 1; // Column is also 1-indexed
+        let value = event.target.value;
 
-                if (value === '') {
-                    return;
-                }
-
-                logCount++;
-                const currentTime = new Date().getTime();
-                let timeDifference = 0;
-
-                if (lastInputTime !== null) {
-                    timeDifference = Math.floor((currentTime - lastInputTime) / 1000);
-                }
-
-                lastInputTime = currentTime;
-                totalElapsedTime += Math.floor((currentTime - startTime) / 1000);
-
-                let totalMinutes = Math.floor(totalElapsedTime / 60);
-                let totalSeconds = totalElapsedTime % 60;
-                let formattedTotalTime = `${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
-
-                let diffMinutes = Math.floor(timeDifference / 60);
-                let diffSeconds = timeDifference % 60;
-                let formattedDiffTime = `${String(diffMinutes).padStart(2, '0')}:${String(diffSeconds).padStart(2, '0')}`;
-
-                // Map row index (0-8) to letters (A-I)
-                let rowLetter = String.fromCharCode(row + 65); // 65 is the ASCII code for 'A'
-
-                // Get the current timestamp
-                let timestamp = new Date().toLocaleTimeString();
-
-                let logEntry = document.createElement("div");
-                logEntry.textContent = `Move ${logCount}: Cell: (${rowLetter}, ${col}), Value: ${value}, Time since last move: ${formattedDiffTime}, Total Time: ${formattedTotalTime}, Timestamp: ${timestamp}`;
-                document.getElementById("log").appendChild(logEntry);
-
-                startTime = currentTime;
-            }
+        if (value === '') {
+            return;
         }
+
+        logCount++;
+        const currentTime = new Date().getTime();
+        let timeDifference = 0;
+
+        if (lastInputTime !== null) {
+            timeDifference = Math.floor((currentTime - lastInputTime) / 1000);
+        }
+
+        lastInputTime = currentTime;
+        totalElapsedTime += Math.floor((currentTime - startTime) / 1000);
+
+        let totalMinutes = Math.floor(totalElapsedTime / 60);
+        let totalSeconds = totalElapsedTime % 60;
+        let formattedTotalTime = `${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
+
+        let diffMinutes = Math.floor(timeDifference / 60);
+        let diffSeconds = timeDifference % 60;
+        let formattedDiffTime = `${String(diffMinutes).padStart(2, '0')}:${String(diffSeconds).padStart(2, '0')}`;
+
+        // Use "R" for row and "C" for column in the log
+        let logEntry = document.createElement("div");
+        logEntry.textContent = `Move ${logCount}: Cell: (R${row}, C${col}), Value: ${value}, Time since last move: ${formattedDiffTime}, Total Time: ${formattedTotalTime}, Timestamp: ${new Date().toLocaleTimeString()}`;
+        document.getElementById("log").appendChild(logEntry);
+
+        startTime = currentTime;
+    }
+}
+
 
         function downloadCSV() {
     try {
