@@ -135,9 +135,7 @@
 
     <div id="button-container">
         <button id="startButton" onclick="startLogging()">Start Logging</button>
-        <button id="stopButton" onclick="stopLogging()" style="display: none;">Stop Logging</button>
-        <button id="resetButton" onclick="resetGame()" style="display: inline;">Reset</button>
-    </div>
+<button id="resetButton" onclick="resetGame()" style="display: none;">Reset</button>    </div>
 
     <table>
         <tbody id="sudoku-grid">
@@ -188,54 +186,47 @@
     let selectedCell = null; // To keep track of which cell was clicked
 
     function startLogging() {
-        if (!loggingEnabled) {
-            loggingEnabled = true;
-            startTime = new Date().getTime();
-            document.getElementById("startButton").style.display = "none";
-            document.getElementById("stopButton").style.display = "inline";
+    if (!loggingEnabled) {
+        loggingEnabled = true;
+        startTime = new Date().getTime();
+        document.getElementById("startButton").style.display = "none"; // Hide start button
+        document.getElementById("resetButton").style.display = "inline"; // Show reset button
 
-            // Disable inputs for pre-filled puzzle numbers
-            const inputs = document.querySelectorAll("#sudoku-grid input");
-            inputs.forEach(input => {
-                if (input.value !== '') {
-                    input.setAttribute("readonly", true); // Make pre-filled cells readonly
-                    input.style.backgroundColor = "#f0f0f0"; // Optional: Lighten background for clarity
-                }
-            });
-
-            alert("Logging started! Enter your moves.");
-        }
-    }
-
-    function stopLogging() {
-        if (loggingEnabled) {
-            loggingEnabled = false;
-            const currentTime = new Date().getTime();
-            totalElapsedTime += Math.floor((currentTime - startTime) / 1000);
-            document.getElementById("startButton").style.display = "inline";
-            document.getElementById("stopButton").style.display = "none";
-            alert("Logging stopped!");
-            lastInputTime = null;
-        }
-    }
-
-    function resetGame() {
+        // Disable inputs for pre-filled puzzle numbers
         const inputs = document.querySelectorAll("#sudoku-grid input");
         inputs.forEach(input => {
-            input.value = '';
-            input.removeAttribute("readonly"); // Make all cells editable again
-            input.style.backgroundColor = ""; // Reset background color
+            if (input.value !== '') {
+                input.setAttribute("readonly", true); // Make pre-filled cells readonly
+                input.style.backgroundColor = "#f0f0f0"; // Optional: Lighten background for clarity
+            }
         });
-        const logContainer = document.getElementById("log");
-        logContainer.innerHTML = '<h2>Move Log:</h2>';
-        loggingEnabled = false;
-        startTime = null;
-        totalElapsedTime = 0;
-        logCount = 0;
-        lastInputTime = null;
-        document.getElementById("startButton").style.display = "inline";
-        document.getElementById("stopButton").style.display = "none";
+
+        alert("Logging started! Enter your moves.");
     }
+}
+
+function resetGame() {
+    const inputs = document.querySelectorAll("#sudoku-grid input");
+    inputs.forEach(input => {
+        input.value = '';
+        input.removeAttribute("readonly"); // Make all cells editable again
+        input.style.backgroundColor = ""; // Reset background color
+    });
+    const logContainer = document.getElementById("log");
+    logContainer.innerHTML = '<h2>Move Log:</h2>';
+
+    // Reset logging state
+    loggingEnabled = false;
+    startTime = null;
+    totalElapsedTime = 0;
+    logCount = 0;
+    lastInputTime = null;
+    
+    document.getElementById("startButton").style.display = "inline"; // Show start button again
+    document.getElementById("resetButton").style.display = "none"; // Hide reset button
+}
+
+
 
     const grid = document.getElementById("sudoku-grid");
 for (let i = 0; i < 9; i++) {
