@@ -152,6 +152,8 @@
         <button id="downloadCSVButton" onclick="downloadCSV()">Download Log (CSV)</button>
         <button id="downloadTXTButton" onclick="downloadTXT()">Download Log (TXT)</button>
         <button id="downloadPDFButton" onclick="downloadPDF()">Download Log (PDF)</button>
+<button id="downloadImageButton" onclick="downloadImage()">Download Sudoku Table</button>
+
     </div>
 
     <!-- Floating number pad -->
@@ -176,6 +178,9 @@
             </tbody>
         </table>
     </div>
+
+<canvas id="sudokuCanvas" style="display: none;"></canvas>
+
 
     <script>
     let loggingEnabled = false;
@@ -346,6 +351,62 @@ function selectNumber(number) {
         document.getElementById("log").appendChild(logEntry);
     }
 }
+
+
+function drawSudokuGrid() {
+    const canvas = document.getElementById("sudokuCanvas");
+    const ctx = canvas.getContext("2d");
+    const grid = document.getElementById("sudoku-grid");
+    const cellSize = 40; // Adjust this based on your table cell size
+
+    canvas.width = cellSize * 9; // Width of the grid
+    canvas.height = cellSize * 9; // Height of the grid
+
+    // Fill the canvas with a white background
+    ctx.fillStyle = "white"; // Set the fill color to white
+    ctx.fillRect(0, 0, canvas.width, canvas.height); // Fill the entire canvas
+
+    // Draw grid lines
+    for (let i = 0; i <= 9; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * cellSize, 0);
+        ctx.lineTo(i * cellSize, canvas.height);
+        ctx.moveTo(0, i * cellSize);
+        ctx.lineTo(canvas.width, i * cellSize);
+        ctx.strokeStyle = "black";
+        ctx.stroke();
+    }
+
+    // Draw numbers
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            const input = grid.rows[i].cells[j].querySelector("input");
+            const value = input.value;
+
+            if (value) {
+                ctx.font = "26px monospace"; // Same font as your table
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "black"; // Set fill style to black for the text
+                ctx.fillText(value, j * cellSize + cellSize / 2, i * cellSize + cellSize / 2);
+            }
+        }
+    }
+}
+
+function downloadImage() {
+    drawSudokuGrid(); // Ensure the grid is drawn with a white background
+
+    const canvas = document.getElementById("sudokuCanvas");
+    canvas.toBlob((blob) => {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "sudoku_table.png"; // Name of the downloaded file
+        link.click();
+    });
+}
+
+
 
 
     function downloadCSV() {
