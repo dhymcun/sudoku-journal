@@ -471,6 +471,48 @@ function drawSudokuGrid() {
     }
 }
 
+
+document.getElementById('downloadLogButton').addEventListener('click', function() {
+    downloadLogWithStats();
+});
+
+function downloadLogWithStats() {
+    const amt = "00:00";  // Replace with actual AMT calculation
+    const timer = "00:00:00";  // Replace with actual timer value
+    const box = "0/81";  // Replace with current box count
+    const date = new Date().toLocaleDateString();  // Current date
+
+    // Construct the statistics string
+    const statistics = `AMT: ${amt} | Timer: ${timer} | Box: ${box} | Date: ${date}\n\n`;
+    
+    // Get existing log content
+    let logContent = getLogContent(); // Your existing function for log content
+
+    // Combine statistics and log content
+    let fileContent = statistics + logContent;
+
+    // Create a Blob from the file content
+    let blob = new Blob([fileContent], { type: 'text/plain' });
+
+    // Create a link element for downloading the file
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sudoku_log.txt';
+    
+    // Trigger the download
+    a.click();
+
+    // Clean up the URL object
+    URL.revokeObjectURL(a.href);
+}
+
+// Sample function to simulate getting log content
+function getLogContent() {
+    return "Move 1: Row 2, Col 3, entered 5\nMove 2: Row 4, Col 6, entered 8";
+}
+
+
+
 function downloadImage() {
     drawSudokuGrid(); // Ensure the grid is drawn with a white background
 
@@ -485,9 +527,23 @@ function downloadImage() {
 
 
 
-
-    function downloadCSV() {
+   function downloadCSV() {
     let csvContent = "data:text/csv;charset=utf-8,";
+
+    // Add formatted statistics to the CSV
+    const amtText = document.getElementById('amt').textContent;
+    const timerText = document.getElementById('timer').textContent;
+    const boxCountText = document.getElementById('box-count').textContent;
+    const dateText = document.getElementById('current-date').textContent;
+
+    // Add statistics as the first row with each in a separate column
+    const statsRow = `AMT: ${amtText}, Timer: ${timerText}, Box: ${boxCountText}, Date: ${dateText}\n`;
+    csvContent += statsRow;
+
+    // Add an empty row for space
+    csvContent += '\n';
+
+    // Header for move log data
     csvContent += "Move,Row,Column,Value,Time since last move,Total Time,Timestamp\n";
 
     const logEntries = document.querySelectorAll("#log div");
@@ -511,30 +567,51 @@ function downloadImage() {
 }
 
 
+
+
     function downloadTXT() {
-        let txtContent = "";
-        const logs = document.querySelectorAll("#log div");
-        logs.forEach(log => {
-            txtContent += log.textContent + "\n";
-        });
+    let txtContent = "";
 
-        const blob = new Blob([txtContent], { type: "text/plain" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "sudoku_log.txt";
-        link.click();
-    }
+    // Get the statistics
+    const amt = document.getElementById('amt').textContent;
+    const timer = document.getElementById('timer').textContent;
+    const boxCount = document.getElementById('box-count').textContent;
+    const currentDate = document.getElementById('current-date').textContent;
 
-    function downloadPDF() {
+    // Format the statistics
+    txtContent += `${amt} | ${timer} | ${boxCount} | ${currentDate}\n\n`;
+
+    const logs = document.querySelectorAll("#log div");
+    logs.forEach(log => {
+        txtContent += log.textContent + "\n";
+    });
+
+    const blob = new Blob([txtContent], { type: "text/plain" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "sudoku_log.txt";
+    link.click();
+}
+
+
+function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'pt', 'a4'); // Create a new jsPDF instance in portrait orientation
 
     doc.setFontSize(10); // Set a smaller font size (adjust as needed)
 
-    // Add column titles
-    doc.text("Move,Coordinates,Value,Time since last move,Total Time,Timestamp", 20, 30);
+    // Add the formatted statistics at the top
+    const amtText = document.getElementById('amt').textContent;
+    const timerText = document.getElementById('timer').textContent;
+    const boxCountText = document.getElementById('box-count').textContent;
+    const dateText = document.getElementById('current-date').textContent;
     
+    const statsText = `${amtText} | ${timerText} | ${boxCountText} | ${dateText}`;
+    doc.text(statsText, 20, 30); // Position the statistics at the top of the PDF
     let yPosition = 50; // Starting vertical position for log entries
+
+    // Add a space after the statistics
+    yPosition += 10; // Adjust this value for more or less space
 
     const logs = document.querySelectorAll("#log div");
     logs.forEach((log, index) => {
@@ -547,8 +624,8 @@ function downloadImage() {
             if (yPosition > 750) { // If yPosition exceeds 750 (adjust based on your margins)
                 doc.addPage(); // Add a new page
                 yPosition = 30; // Reset yPosition for new page
-                doc.text("Move,Coordinates,Value,Time since last move,Total Time,Timestamp", 20, 30); // Re-add column titles
-                yPosition += 20; // Leave space after titles
+                doc.text(statsText, 20, 30); // Re-add the statistics on the new page
+                yPosition += 20; // Leave space after stats
                 doc.setFontSize(10); // Reset font size on new page
             }
             doc.text(line, 20, yPosition); // Position the text with some margin
@@ -558,6 +635,8 @@ function downloadImage() {
 
     doc.save("sudoku_log.pdf");
 }
+
+
 
 
 </script>
