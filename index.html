@@ -143,6 +143,13 @@
         </tbody>
     </table>
 
+ <div id="real-time-stats" style="text-align: center; margin-top: 10px; font-size: 14px;">
+        <span id="amt">AMT: 00:00</span> | 
+        <span id="timer">Timer: 00:00:00</span> | 
+        <span id="box-count">Box: 0/81</span> | 
+        <span id="current-date">Date: </span>
+    </div>
+
     <div id="log">
         <h2>Move Log:</h2>
         <!-- Logs will appear here -->
@@ -189,43 +196,105 @@
     let logCount = 0;
     let lastInputTime = null;
     let selectedCell = null; // To keep track of which cell was clicked
+  let filledCells = 0;
+        let timerInterval;
+
+  function updateStats() {
+    if (loggingEnabled) {
+        const currentTime = new Date().getTime();
+        const elapsedTime = Math.floor((currentTime - startTime) / 1000); // Calculate elapsed time in seconds
+
+        // Timer Calculation
+        const hours = Math.floor(elapsedTime / 3600);
+        const minutes = Math.floor((elapsedTime % 3600) / 60);
+        const seconds = elapsedTime % 60;
+        document.getElementById('timer').textContent = `Timer: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+        // Average Move Time (AMT)
+        const avgMoveTime = logCount ? Math.floor(elapsedTime / logCount) : 0;
+        document.getElementById('amt').textContent = `AMT: ${String(Math.floor(avgMoveTime / 60)).padStart(2, '0')}:${String(avgMoveTime % 60).padStart(2, '0')}`;
+
+        // Update Box Count
+        updateBoxCount();
+
+        // Current Date
+        const today = new Date().toLocaleDateString('en-US');
+        document.getElementById('current-date').textContent = `Date: ${today}`;
+    }
+}
+
+function handleInputChange(event) {
+    if (loggingEnabled && event.target.value !== '') {
+        // Increment logCount when a number is entered
+        logCount++;
+        updateBoxCount(); // Call to update the box count
+    }
+}
+
+// Function to update box count
+function updateBoxCount() {
+    const inputs = document.querySelectorAll("#sudoku-grid input");
+    let filledCells = Array.from(inputs).filter(input => input.value !== '').length;
+    document.getElementById('box-count').textContent = `Box: ${filledCells}/81`; // Update box count display
+}
+
+// Attach event listeners to input fields for tracking changes
+const inputs = document.querySelectorAll("#sudoku-grid input");
+inputs.forEach(input => {
+    input.addEventListener('input', handleInputChange); // Call handleInputChange on input event
+});
+    
 
     function startLogging() {
     if (!loggingEnabled) {
         loggingEnabled = true;
-        startTime = new Date().getTime();
-        document.getElementById("startButton").style.display = "none"; // Hide start button
-        document.getElementById("resetButton").style.display = "inline"; // Show reset button
+        startTime = new Date().getTime(); // Start the timer
+        updateStats(); // Initial update for stats
+        updateBoxCount(); // Update box count at the start
+        timerInterval = setInterval(updateStats, 1000); // Update every second
 
-        // Disable inputs for pre-filled puzzle numbers
+        // Hide start button and show reset button
+        document.getElementById("startButton").style.display = "none";
+        document.getElementById("resetButton").style.display = "inline";
+
+        // Make input boxes uneditable and change background color for filled inputs
         const inputs = document.querySelectorAll("#sudoku-grid input");
         inputs.forEach(input => {
-            if (input.value !== '') {
-                input.setAttribute("readonly", true); // Make pre-filled cells readonly
-                input.style.backgroundColor = "#f0f0f0"; // Optional: Lighten background for clarity
+            if (input.value !== '') { // Check if the input has a value
+                input.setAttribute("readonly", true); // Set readonly attribute to true
+                input.style.backgroundColor = "#d3d3d3"; // Change background color to soft gray
             }
         });
-
-        alert("Logging started! Enter your moves.");
     }
 }
+
+
+
 
 function resetGame() {
     const inputs = document.querySelectorAll("#sudoku-grid input");
     inputs.forEach(input => {
-        input.value = '';
+        input.value = ''; // Clear the input value
         input.removeAttribute("readonly"); // Make all cells editable again
         input.style.backgroundColor = ""; // Reset background color
     });
+    
     const logContainer = document.getElementById("log");
-    logContainer.innerHTML = '<h2>Move Log:</h2>';
+    logContainer.innerHTML = '<h2>Move Log:</h2>'; // Clear the log
+
+    // Reset the displayed statistics
+    const today = new Date().toLocaleDateString('en-US');
+    document.getElementById('amt').textContent = "AMT: 00:00"; // Reset Average Move Time
+    document.getElementById('timer').textContent = "Timer: 00:00:00"; // Reset Timer
+    document.getElementById('box-count').textContent = "Box: 0/81"; // Reset Box Count
+    document.getElementById('current-date').textContent = `Date: ${today}`; // Reset Date
 
     // Reset logging state
-    loggingEnabled = false;
-    startTime = null;
-    totalElapsedTime = 0;
-    logCount = 0;
-    lastInputTime = null;
+    loggingEnabled = false; // Set logging to false
+    startTime = null; // Reset start time
+    totalElapsedTime = 0; // Reset total elapsed time
+    logCount = 0; // Reset log count
+    lastInputTime = null; // Reset last input time
     
     document.getElementById("startButton").style.display = "inline"; // Show start button again
     document.getElementById("resetButton").style.display = "none"; // Hide reset button
@@ -256,6 +325,8 @@ for (let i = 0; i < 9; i++) {
     }
     grid.appendChild(row);
 }
+
+
 
 
 
@@ -349,8 +420,14 @@ function selectNumber(number) {
         const logEntry = document.createElement("div");
         logEntry.textContent = `Move ${logCount}: Cell: (R${row}, C${col}), Value: ${value}, Time since last move: ${formattedDiffTime}, Total Time: ${formattedTotalTime}, Timestamp: ${timestamp}`;
         document.getElementById("log").appendChild(logEntry);
+
+		updateBoxCount();
+
     }
 }
+
+
+
 
 
 function drawSudokuGrid() {
